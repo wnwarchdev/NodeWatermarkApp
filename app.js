@@ -10,11 +10,15 @@ const addTextWatermarkToImage = async function(inputFile, outputFile, text) {
     alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
     alignmentY: Jimp.VERTICAL_ALIGN_MIDDLE,
   };
-
-  image.print(font, 0, 0, textData, image.getWidth(), image.getHeight());
-  await image.quality(100).writeAsync(outputFile);
-  console.log('Success! The text has been added!');
-  restartApp();
+try {
+    image.print(font, 0, 0, textData, image.getWidth(), image.getHeight());
+    await image.quality(100).writeAsync(outputFile);
+    console.log('Success! The text has been added!');
+    restartApp();
+  } catch(error) {
+    console.log('Oops... there is a problem with text watermark function, contact developer or try image watermark!');
+    restartApp();
+  }
 };
 
 const addImageWatermarkToImage = async function(inputFile, outputFile, watermarkFile) {
@@ -27,9 +31,16 @@ const addImageWatermarkToImage = async function(inputFile, outputFile, watermark
     mode: Jimp.BLEND_SOURCE_OVER,
     opacitySource: 0.5,
   });
-  await image.quality(100).writeAsync(outputFile);
-  console.log('Success! The image has been added!');
-  restartApp();
+
+  try {
+    await image.quality(100).writeAsync(outputFile);
+    console.log('Success! The image has been added!');
+    restartApp();
+  } catch(error) {
+    console.log('Hmph... there is a problem with image watermark function, contact developer or try text watermark!');
+    restartApp();
+  }
+
 };
 
 const prepareOutputFilename = (filename) => {
