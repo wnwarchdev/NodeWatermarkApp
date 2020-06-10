@@ -1,5 +1,6 @@
 const Jimp = require('jimp');
 const inquirer = require('inquirer');
+const fs = require('fs');
 
 const addTextWatermarkToImage = async function(inputFile, outputFile, text) {
   const image = await Jimp.read(inputFile);
@@ -48,7 +49,7 @@ const startApp = async () => {
     }]);
 
   // if answer is no, just quit the app
-  if(!answer.start) process.exit();
+  if(!answer.start) {console.log('Ok, see you next time!'); process.exit();}
 
   // ask about input file and watermark type
   const options = await inquirer.prompt([{
@@ -62,26 +63,42 @@ const startApp = async () => {
     choices: ['Text watermark', 'Image watermark'],
   }]);
 
-  if(options.watermarkType === 'Text watermark') {
-    const text = await inquirer.prompt([{
-      name: 'value',
-      type: 'input',
-      message: 'Type your watermark text:',
-    }])
-    options.watermarkText = text.value;
-    addTextWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), options.watermarkText);
-  }
-  else {
-    const image = await inquirer.prompt([{
-      name: 'filename',
-      type: 'input',
-      message: 'Type your watermark name:',
-      default: 'logo.png',
-    }])
-    options.watermarkImage = image.filename;
-    addImageWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), './img/' + options.watermarkImage);
+  if (fs.existsSync('./img/' + options.inputImage)) {
 
+    if(options.watermarkType === 'Text watermark') {
+      const text = await inquirer.prompt([{
+        name: 'value',
+        type: 'input',
+        message: 'Type your watermark text:',
+      }])
+      options.watermarkText = text.value;
+      addTextWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), options.watermarkText);
+    }
+    else {
+      const image = await inquirer.prompt([{
+        name: 'filename',
+        type: 'input',
+        message: 'Type your watermark name:',
+        default: 'logo.png',
+      }])
+      options.watermarkImage = image.filename;
+
+
+      if (fs.existsSync('./img/' + image.filename)) {
+        addImageWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), './img/' + options.watermarkImage);
+      } else {
+        console.log('Something went wrong.... Watermark image path is not valid.... Try again');
+        restartApp();
+      }
+
+    }
+
+  } else {
+    console.log('Hang on... Input image path is not valid.... Try again');
+    restartApp();
   }
+
+
 
 };
 
@@ -92,7 +109,7 @@ const restartApp = async () => {
       type: 'confirm'
     }]);
 
-    if(!restart.start) process.exit();
+    if(!restart.start) {console.log('Goodbye!'); process.exit();}
 
     startApp();
 };
