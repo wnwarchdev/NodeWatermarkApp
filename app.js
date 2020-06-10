@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 
 const addTextWatermarkToImage = async function(inputFile, outputFile, text) {
   const image = await Jimp.read(inputFile);
-  const font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
+  const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
   const textData = {
     text: text,
     alignmentX: Jimp.HORIZONTAL_ALIGN_CENTER,
@@ -12,6 +12,8 @@ const addTextWatermarkToImage = async function(inputFile, outputFile, text) {
 
   image.print(font, 0, 0, textData, image.getWidth(), image.getHeight());
   await image.quality(100).writeAsync(outputFile);
+  console.log('Success! The text has been added!');
+  restartApp();
 };
 
 const addImageWatermarkToImage = async function(inputFile, outputFile, watermarkFile) {
@@ -25,12 +27,16 @@ const addImageWatermarkToImage = async function(inputFile, outputFile, watermark
     opacitySource: 0.5,
   });
   await image.quality(100).writeAsync(outputFile);
+  console.log('Success! The image has been added!');
+  restartApp();
 };
 
 const prepareOutputFilename = (filename) => {
   const [ name, ext ] = filename.split('.');
   return `${name}-with-watermark.${ext}`;
 };
+
+
 
 const startApp = async () => {
 
@@ -74,8 +80,21 @@ const startApp = async () => {
     }])
     options.watermarkImage = image.filename;
     addImageWatermarkToImage('./img/' + options.inputImage, './img/' + prepareOutputFilename(options.inputImage), './img/' + options.watermarkImage);
+
   }
 
+};
+
+const restartApp = async () => {
+  const restart = await inquirer.prompt([{
+      name: 'start',
+      message: 'Do you want to repeat process?',
+      type: 'confirm'
+    }]);
+
+    if(!restart.start) process.exit();
+
+    startApp();
 };
 
 startApp();
